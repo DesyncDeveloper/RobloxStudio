@@ -1,0 +1,254 @@
+local RemoteDataService = {}
+RemoteDataService.__index = RemoteDataService
+
+local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local _DATA = ReplicatedStorage:WaitForChild("_DATA")
+local _ConnectDataService = _DATA:FindFirstChild("_ConnectDataService")
+local _ConnectRemoteDataService = _DATA:FindFirstChild("_ConnectRemoteDataService")
+local _ConnectHttpService = _DATA:FindFirstChild("_ConnectHttpService")
+
+local DataService = nil
+
+function RemoteDataService.new()
+
+	if not DataService then
+		local self = setmetatable({}, RemoteDataService)
+		DataService = RemoteDataService
+		return self
+	else
+		return DataService
+	end
+end
+
+function RemoteDataService:SetPlayer(player)
+	if player then
+		task.spawn(function()
+			local response = _ConnectHttpService:Invoke("Get", "/api/v1/roblox/GetData", {
+				ToDo = "GetPlayerData",
+				UserId = tostring(player.UserId)
+			})
+
+			if response ~= nil and type(response) == "table" and response["message"] ~= nil and type(response.message) == "table" then
+				_ConnectDataService:Fire(player, response.message, "Load")
+				return true
+			else
+				task.wait(5)
+				self:SetPlayer(player)
+			end
+		end)
+	end
+end
+
+function RemoteDataService:CreateClan(player, clanName)
+	if player and clanName then
+		local clanData = { ToDo = "CreateClan", OwnerId = tostring(player.UserId), ClanName = clanName }
+		local clanResponse = _ConnectHttpService:Invoke("Post", "/api/v1/roblox/SetData", clanData)
+
+		if clanResponse and type(clanResponse) == "table" then
+			
+			if string.find(clanResponse.message, "Clan created successfully.") then
+				local clanId = string.match(clanResponse.message, "Clan ID: (%S+)")
+				print("Clan created successfully. Clan ID:", clanId)
+				
+				self:Update({[1] = player})
+				return true, clanId
+			else
+				print(clanResponse.message)
+				return false, clanResponse.message
+			end
+		end
+	end
+end
+
+function RemoteDataService:LeaveClan(player)
+	if player then
+		local clanData = { ToDo = "LeaveClan", UserId = tostring(player.UserId) }
+		local clanResponse = _ConnectHttpService:Invoke("Post", "/api/v1/roblox/SetData", clanData)
+		
+		if clanResponse and type(clanResponse) == "table" then
+			if string.find(clanResponse.message, "Clan left successfully.") then
+				print("Clan left successfully.")
+				
+				self:Update({[1] = player})
+			else
+				print(clanResponse.message)
+				return false, clanResponse.message
+			end
+		end
+	end
+end
+
+function RemoteDataService:DeleteClan(player)
+	if player then
+		local clanData = { ToDo = "DeleteClan", UserId = tostring(player.UserId) }
+		local clanResponse = _ConnectHttpService:Invoke("Post", "/api/v1/roblox/SetData", clanData)
+
+		if clanResponse and type(clanResponse) == "table" then
+			if string.find(clanResponse.message, "Clan deleted successfully.") then
+				print("Clan deleted successfully.")
+
+				self:Update({[1] = player})
+			else
+				print(clanResponse.message)
+				return false, clanResponse.message
+			end
+		end
+	end
+end
+
+function RemoteDataService:GetClanData(clanId)
+	local response = _ConnectHttpService:Invoke("Get", "/api/v1/roblox/GetData", {
+		ToDo = "GetClanData",
+		ClanId = tostring(clanId)
+	})
+
+	if response ~= nil and type(response) == "table" and response["message"] ~= nil and type(response.message) == "table" then
+		return response.message
+	end
+end
+
+function RemoteDataService:SetClanValue(clanId, Data)
+	if clanId then
+		if Data.Increment then
+			local ClanData = self:GetClanData(clanId)
+
+			if ClanData then
+				local validStats = {
+					"ClanStat1", "ClanStat2", "ClanStat3", "ClanStat4", "ClanStat5",
+					"ClanStat6", "ClanStat7", "ClanStat8", "ClanStat9", "ClanStat10"
+				}
+
+				if table.find(validStats, Data.Stat) then
+					ClanData[Data.Stat] = tostring((tonumber(ClanData[Data.Stat]) or 0) + Data.IncrementValue)
+					print("Incremented " .. Data.Stat .. " for clan " .. clanId)
+					
+					task.spawn(function()
+						local SaveData = {OwnerId = ClanData["OwnerId"]}
+
+						for i = 1, 10 do 
+							local key = "ClanStat" .. i
+							SaveData[key] = ClanData[key]
+						end
+
+
+						self:SaveClanData({[1] = clanId, [2] = SaveData})
+					end)
+				else
+					print("Invalid stat provided")
+				end
+			else
+				print("Failed to get clan data for " .. clanId)
+			end
+		else
+			local ClanData = self:GetClanData(clanId)
+			if ClanData then
+				
+				local validStats = {
+					"ClanStat1", "ClanStat2", "ClanStat3", "ClanStat4", "ClanStat5",
+					"ClanStat6", "ClanStat7", "ClanStat8", "ClanStat9", "ClanStat10"
+				}
+
+				if table.find(validStats, Data.Stat) then
+					ClanData[Data.Stat] = tostring(Data.Stat)
+										
+					task.spawn(function()
+						local SaveData = {OwnerId = ClanData["OwnerId"]}
+
+						for i = 1, 10 do 
+							local key = "ClanStat" .. i
+							SaveData[key] = ClanData[key]
+						end
+
+
+						self:SaveClanData({[1] = clanId, [2] = SaveData})
+					end)
+				end
+			else
+				print("Failed to get clan data for " .. clanId)
+			end
+		end
+	end
+end
+
+function RemoteDataService:SaveClanData(data)
+	local _Data = {}
+	_Data.ClanId = data[1]
+	_Data.Data = data[2]
+	
+	local saveData = { ToDo = "UpdateClanData", ClanId = _Data.Data.ClanId, OwnerId = _Data.Data.OwnerId }
+
+	saveData["ClanId"] = _Data.ClanId
+
+	for i = 1, 10 do 
+		local key = "ClanStat" .. i
+		saveData[key] = _Data.Data[key]
+	end
+			
+	local saveResponse = _ConnectHttpService:Invoke("Post","/api/v1/roblox/SetData", saveData)
+
+	if saveResponse and type(saveResponse) == "table" and saveResponse.message == "Clan Data updated successfully." then
+		return true
+	end
+end
+
+-- Data
+
+function RemoteDataService:Update(data)
+	local _Data = {}
+	_Data.User = data[1]
+
+	local response = _ConnectHttpService:Invoke("Get", "/api/v1/roblox/GetData", {
+		ToDo = "GetPlayerData",
+		UserId = tostring(_Data.User.UserId)
+	})
+
+	if response ~= nil and type(response) == "table" and response["message"] ~= nil and type(response.message) == "table" then
+		_ConnectDataService:Fire(_Data.User, response.message, "Update")
+		return true
+	else
+		self:SetPlayer(_Data.User)
+	end
+end
+
+function RemoteDataService:Save(data)
+	local _Data = {}
+	_Data.User = data[1]
+	_Data.Data = data[2]
+
+	local saveData = { ToDo = "UpdateData", UserId = _Data.Data.UserId, ClanId = _Data.Data.ClanId, Stat1 = _Data.Data.Stat1, Stat2 = _Data.Data.Stat2 , Stat3 = _Data.Data.Stat3 }
+	local saveResponse = _ConnectHttpService:Invoke("Post", "/api/v1/roblox/SetData", saveData)
+
+	if saveResponse and type(saveResponse) == "table" and saveResponse.message == "Data updated successfully." then
+		return true
+	end
+end
+
+function RemoteDataService:GetAllClans()
+	
+	local response = _ConnectHttpService:Invoke("Get", "/api/v1/roblox/GetData", {
+		ToDo = "GetClans",
+	})
+	
+	if response ~= nil and type(response) == "table" and response["message"] ~= nil and type(response.message) == "table" then
+		print(response.message)
+		_ConnectDataService:Fire(response.message, nil, "Clans")
+		return true
+	end
+end
+
+function RemoteDataService:Initialize()
+	_ConnectRemoteDataService.Event:Connect(function(...)
+		local data = {...}
+
+		if data[3] and data[3] == "Save" then
+			self:Save(data)
+		elseif data[3] and data[3] == "Update" then
+			self:Update(data)
+		elseif data[3] and data[3] == "GetClans" then
+			self:GetAllClans()
+		end
+	end)
+end
+
+return RemoteDataService
