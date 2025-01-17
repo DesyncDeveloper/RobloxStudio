@@ -45,11 +45,12 @@ end
 local function updateAngleSelectionUI(selectedAngle)
 	local angles = {"X", "Y", "Z"}
 	for _, angle in ipairs(angles) do
-		local iconVisible = angle == selectedAngle
-		module.Ui.Main.AngleSelection[angle].Icon.Visible = iconVisible
-		module.Ui.Main.AngleSelection[angle].Indication.Visible = angle == selectedAngle
+		local isSelected = angle == selectedAngle
+		module.Ui.Main.AngleSelection[angle].Icon.Visible = isSelected
+		module.Ui.Main.AngleSelection[angle].Indication.Visible = not isSelected
 	end
 end
+
 
 function module.Open()
 	if not module.Ui then
@@ -91,7 +92,6 @@ function module.HandlePreview()
 		Render.RenderModelInPreviewViewport(RenderSettings)
 
 		if RenderSettings.Scale > 1 then
-			print("Yes enable")
 			RenderSettings.DynamicCamera = false
 			RenderSettings.Frame:FindFirstChild(RenderSettings.Model[1].Name):ScaleTo(RenderSettings.Scale)
 		end
