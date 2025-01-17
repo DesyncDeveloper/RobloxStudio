@@ -53,8 +53,10 @@ function Slider.new(frame, initial, config)
 		local inputValue = tonumber(self._valueLabel.Text)
 		if inputValue then
 			self:SetValue(inputValue or 0)
+			self._released:Fire(self.Value)
 		else
 			self._valueLabel.Text = tostring(self.Value)
+			self._released:Fire(self.Value)
 		end
 	end)
 
