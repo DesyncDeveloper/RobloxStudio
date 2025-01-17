@@ -139,7 +139,7 @@ function module.Start()
 
 		for _, sliderInfo in pairs(sliders) do
 			local slider
-			print(sliderInfo.SliderType)
+			print(sliderInfo)
 			if sliderInfo.SliderType == "Line" then
 				slider = Slider.new(sliderInfo.frame, 0, {
 					MinValue = sliderInfo.min,
