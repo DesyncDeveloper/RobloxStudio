@@ -12,9 +12,9 @@ local CircularSlider_F = loadstring(CircularSlider_C)
 local Slider_F = loadstring(Slider_C)
 local Render_F = loadstring(Render_C)
 
-local CircularSlider = CircularSlider_F
-local Slider = Slider_F
-local Render = Render_F
+local CircularSlider = CircularSlider_F()
+local Slider = Slider_F()
+local Render = Render_F()
 
 
 --// Module
