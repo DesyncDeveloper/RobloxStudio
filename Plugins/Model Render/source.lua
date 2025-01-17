@@ -16,6 +16,8 @@ local CircularSlider = CircularSlider_F()
 local Slider = Slider_F()
 local Render = Render_F()
 
+print(Slider)
+
 
 --// Module
 local module = {
