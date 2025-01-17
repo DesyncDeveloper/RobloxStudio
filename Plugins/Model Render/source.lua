@@ -23,7 +23,8 @@ local module = {
 
 local PluginSettings = {
 	CurrentAngle = "X",
-	IsInPreviewMode = false
+	IsInPreviewMode = false,
+	Sliders = {}
 }
 
 local RenderSettings = {
@@ -48,6 +49,13 @@ local function updateAngleSelectionUI(selectedAngle)
 		local isSelected = angle == selectedAngle
 		module.Ui.Main.AngleSelection[angle].Icon.Visible = isSelected
 		module.Ui.Main.AngleSelection[angle].Indication.Visible = not isSelected
+		
+		if isSelected then
+			if PluginSettings.Sliders["Rotation"..angle] ~= nil then
+				local Slider = PluginSettings.Sliders["Rotation"..angle]
+				Slider:SetUI()
+			end
+		end
 	end
 end
 
@@ -182,6 +190,8 @@ function module.Start()
 					module.HandlePreview()
 				end
 			end)
+			
+			PluginSettings.Sliders[sliderInfo.property] = slider
 		end
 	end
 end
