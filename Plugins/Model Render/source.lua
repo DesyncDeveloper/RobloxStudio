@@ -75,6 +75,29 @@ function module.HandleButton(Button, callback)
 	end
 end
 
+function module.HandlePreview()
+	if RenderSettings.Model[1] == nil then
+		warn("Please select the model inside the explorer")
+	end
+
+	if RenderSettings.Model[1]:IsA("Model") then
+		if RenderSettings.Scale == 0 then
+			RenderSettings.Scale = RenderSettings.Model[1]:GetScale()
+		end
+
+		RenderSettings.Frame = module.Ui.Main.ModelViewport
+		Render.RenderModelInPreviewViewport(RenderSettings)
+
+		if RenderSettings.Scale >= 1 then
+			RenderSettings.Frame:FindFirstChild(RenderSettings.Model[1].Name):ScaleTo(RenderSettings.Scale)
+		end
+
+		PluginSettings.IsInPreviewMode = true
+	else
+		warn("Please select a model not a: ", type(RenderSettings.Model[1]))
+	end
+end
+
 function module.Start()
 	if module.Ui then
 		local buttonActions = {
@@ -115,7 +138,7 @@ function module.Start()
 			PluginSettings.CurrentAngle = "Z"
 		end)
 
-		module.HandleButton(module.Ui.Main.PreviewModel.Click, function() end)
+		module.HandleButton(module.Ui.Main.PreviewModel.Click, function() module.HandlePreview() end)
 		module.HandleButton(module.Ui.Main.RemoveModel.Click, function()
 			PluginSettings.IsInPreviewMode = false
 			for _, child in pairs(module.Ui.Main.Preview.ModelViewport:GetChildren()) do
@@ -139,7 +162,6 @@ function module.Start()
 
 		for _, sliderInfo in pairs(sliders) do
 			local slider
-			print(sliderInfo)
 			if sliderInfo.SliderType == "Line" then
 				slider = Slider.new(sliderInfo.frame, 0, {
 					MinValue = sliderInfo.min,
@@ -147,7 +169,6 @@ function module.Start()
 					Increment = sliderInfo.inc,
 				})
 			elseif sliderInfo.SliderType == "Circle" then
-				print("Circle")
 				slider = CircularSlider.new(sliderInfo.frame)
 				print(slider)
 			end
@@ -155,7 +176,7 @@ function module.Start()
 			slider.Released:Connect(function(value)
 				RenderSettings[sliderInfo.property] = value
 				if PluginSettings.IsInPreviewMode then
-					-- UpdatePreview()
+					module.HandlePreview()
 				end
 			end)
 		end
