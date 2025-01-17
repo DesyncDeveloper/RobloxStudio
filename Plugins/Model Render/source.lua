@@ -155,9 +155,9 @@ function module.Start()
 		end)
 
 		local sliders = {
-			{frame = module.Ui.Main.Distance, SliderType ="Line", min = 0, max = 100, inc = 1},
-			{frame = module.Ui.Main.Scale, SliderType = "Line", min = 0, max = 100, inc = 0.5},
-			{frame = module.Ui.Main.Angle, SliderType = "Circle"}
+			{frame = module.Ui.Main.Distance, SliderType ="Line", property = "Distance", min = 0, max = 100, inc = 1},
+			{frame = module.Ui.Main.Scale, SliderType = "Line", property = "Scale", min = 0, max = 100, inc = 0.5},
+			{frame = module.Ui.Main.Angle, SliderType = "Circle", property = "Rotation"..PluginSettings.CurrentAngle}
 		}
 
 		for _, sliderInfo in pairs(sliders) do
