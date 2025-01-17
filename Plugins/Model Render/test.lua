@@ -51,11 +51,9 @@ local function updateAngleSelectionUI(selectedAngle)
 		module.Ui.Main.AngleSelection[angle].Indication.Visible = not isSelected
 		
 		if isSelected then
-			print(PluginSettings.Sliders)
-			print(PluginSettings.Sliders["Angle"])
-			if PluginSettings.Sliders["Rotation"..angle] ~= nil then
-				local Slider = PluginSettings.Sliders["Rotation"..angle]
-				Slider.SetUI()
+			local AngleSlider = PluginSettings.Sliders["Angle"]
+			if AngleSlider then
+				AngleSlider.SetUI(RenderSettings["Rotation"..PluginSettings.CurrentAngle])
 			end
 		end
 	end
