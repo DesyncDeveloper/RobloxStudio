@@ -7,7 +7,7 @@ local Selection = game:GetService("Selection")
 --// Helpers
 local CircularSlider_C = HttpService:GetAsync("https://raw.githubusercontent.com/DesyncDeveloper/RobloxStudio/refs/heads/main/Plugins/Model%20Render/Helpers/CircularSlider.lua", true)
 local Slider_C = HttpService:GetAsync("https://raw.githubusercontent.com/DesyncDeveloper/RobloxStudio/refs/heads/main/Plugins/Model%20Render/Helpers/Slider.lua", true)
-local Render_C = HttpService:GetAsync("https://raw.githubusercontent.com/DesyncDeveloper/RobloxStudio/refs/heads/main/Plugins/Model%20Render/Helpers/Render.lua", true)
+local Render_C = HttpService:GetAsync("https://raw.githubusercontent.com/TheNexusAvenger/Module3D/refs/heads/master/Module3D.luau", true)
 local CircularSlider_F = loadstring(CircularSlider_C)
 local Slider_F = loadstring(Slider_C)
 local Render_F = loadstring(Render_C)
@@ -79,6 +79,47 @@ function module.HandleButton(Button, callback)
 	end
 end
 
+local function RenderModel(frame, model, settings)
+	if not model:IsA("Model") or not model.PrimaryPart then
+		warn("Model must have a PrimaryPart set.")
+		return
+	end
+
+	-- Clean up the frame's existing children
+	for _, child in ipairs(frame:GetChildren()) do
+		if not child:IsA("UIAspectRatioConstraint") then
+			child:Destroy()
+		end
+	end
+
+	-- Attach the model to the frame using Module3D
+	local model3D = Render:Attach3D(frame, model)
+
+	-- Set properties from the settings table
+	model3D.Visible = true
+	if settings.Scale then
+		model:ScaleTo(settings.Scale)
+	end
+
+	-- Apply rotation and distance
+	local rotationCFrame = CFrame.Angles(
+		math.rad(settings.RotationX or 0),
+		math.rad(settings.RotationY or 0),
+		math.rad(settings.RotationZ or 0)
+	)
+	local positionCFrame = CFrame.new(0, 0, -(settings.Distance or 10)) -- Default distance
+	model3D:SetCFrame(positionCFrame * rotationCFrame)
+
+	-- Set depth multiplier (optional)
+	model3D:SetDepthMultiplier(settings.DepthMultiplier or 1.5)
+
+	-- Update the viewport to reflect changes
+	model3D:Update()
+
+	-- Return the model3D instance for further control if needed
+	return model3D
+end
+
 function module.HandlePreview()
 	if RenderSettings.Model[1] == nil then
 		warn("Please select the model inside the explorer")
@@ -91,7 +132,15 @@ function module.HandlePreview()
 		end
 
 		RenderSettings.Frame = module.Ui.Main.Preview.ModelViewport
-		Render.RenderModelInPreviewViewport(RenderSettings)
+		
+		RenderModel(RenderSettings.Frame, RenderSettings.Model[1], {
+			Distance = RenderSettings.Distance, -- Distance from the camera
+			Scale = RenderSettings.Scale, -- Scale the model
+			RotationX = RenderSettings.RotationX, -- Rotate 45 degrees on the X-axis
+			RotationY = RenderSettings.RotationY, -- Rotate 30 degrees on the Y-axis
+			RotationZ = RenderSettings.RotationZ, -- Rotate 15 degrees on the Z-axis
+			DepthMultiplier = 1.8, -- Optional: Adjust the camera depth
+		})
 
 		if RenderSettings.Scale > 1 then
 			RenderSettings.DynamicCamera = false
