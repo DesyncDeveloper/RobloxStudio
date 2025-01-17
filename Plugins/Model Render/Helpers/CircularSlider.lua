@@ -57,8 +57,8 @@ function CircularSlider.new(frame)
 		end
 	end)
 
-	function self.Test()
-		print("ye")
+	function self.SetUI()
+		self:SetUI()
 	end
 
 	self:SetValue(0)
