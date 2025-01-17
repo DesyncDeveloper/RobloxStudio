@@ -58,6 +58,7 @@ function CircularSlider.new(frame)
 	end)
 
 	function self.SetUI(value)
+		print(value)
 		local angle = math.rad(value)
 		local radius = (self.Outer.AbsoluteSize.X / 2)
 		local center = self.Outer.AbsolutePosition + self.Outer.AbsoluteSize / 2
