@@ -128,7 +128,7 @@ function module.HandlePreview()
 
 		RenderSettings.Frame = module.Ui.Main.Preview.ModelViewport
 		
-		local model3D = RenderModel(RenderSettings.Frame, RenderSettings.Model[1], {
+		local model3D = RenderModel(RenderSettings.Frame, RenderSettings.Model[1]:Clone(), {
 			Distance = RenderSettings.Distance,
 			Scale = RenderSettings.Scale,
 			RotationX = RenderSettings.RotationX, 
