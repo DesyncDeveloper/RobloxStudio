@@ -52,7 +52,7 @@ local function updateAngleSelectionUI(selectedAngle)
 		
 		if isSelected then
 			print(PluginSettings.Sliders)
-			print(PluginSettings.Sliders["Rotation"..angle])
+			print(PluginSettings.Sliders["angle"])
 			if PluginSettings.Sliders["Rotation"..angle] ~= nil then
 				local Slider = PluginSettings.Sliders["Rotation"..angle]
 				Slider.SetUI()
@@ -169,9 +169,9 @@ function module.Start()
 		end)
 
 		local sliders = {
-			{frame = module.Ui.Main.Distance, SliderType ="Line", property = "Distance", min = 0, max = 100, inc = 1},
-			{frame = module.Ui.Main.Scale, SliderType = "Line", property = "Scale", min = 0, max = 100, inc = 0.5},
-			{frame = module.Ui.Main.Angle, SliderType = "Circle", property = "Rotation"..PluginSettings.CurrentAngle}
+			{frame = module.Ui.Main.Distance, SliderType ="Line", name = "Distance", property = "Distance", min = 0, max = 100, inc = 1},
+			{frame = module.Ui.Main.Scale, SliderType = "Line", name = "Scale", property = "Scale", min = 0, max = 100, inc = 0.5},
+			{frame = module.Ui.Main.Angle, SliderType = "Circle", name = "Angle", property = "Rotation"..PluginSettings.CurrentAngle}
 		}
 
 		for _, sliderInfo in pairs(sliders) do
@@ -192,10 +192,8 @@ function module.Start()
 					module.HandlePreview()
 				end
 			end)
-			
-			print(slider)
-			
-			PluginSettings.Sliders[sliderInfo.property] = slider
+						
+			PluginSettings.Sliders[sliderInfo.name] = slider
 		end
 	end
 end
