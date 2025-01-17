@@ -170,7 +170,6 @@ function module.Start()
 				})
 			elseif sliderInfo.SliderType == "Circle" then
 				slider = CircularSlider.new(sliderInfo.frame)
-				print(slider)
 			end
 
 			slider.Released:Connect(function(value)
