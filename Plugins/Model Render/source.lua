@@ -33,7 +33,6 @@ local RenderSettings = {
 	RotationY = 0,
 	RotationZ = 0,
 	Scale = 0,
-	DynamicCamera = false, 
 	Model = Selection:Get()
 }
 
@@ -84,39 +83,36 @@ local function RenderModel(frame, model, settings)
 		warn("Model must have a PrimaryPart set.")
 		return
 	end
-
-	-- Clean up the frame's existing children
 	for _, child in ipairs(frame:GetChildren()) do
 		if not child:IsA("UIAspectRatioConstraint") then
 			child:Destroy()
 		end
 	end
-
-	-- Attach the model to the frame using Module3D
+	
 	local model3D = Render:Attach3D(frame, model)
 
-	-- Set properties from the settings table
 	model3D.Visible = true
 	if settings.Scale then
 		model:ScaleTo(settings.Scale)
 	end
 
-	-- Apply rotation and distance
 	local rotationCFrame = CFrame.Angles(
 		math.rad(settings.RotationX or 0),
 		math.rad(settings.RotationY or 0),
 		math.rad(settings.RotationZ or 0)
 	)
-	local positionCFrame = CFrame.new(0, 0, -(settings.Distance or 10)) -- Default distance
+	local positionCFrame = CFrame.new(0, 0, -(settings.Distance or 10))
 	model3D:SetCFrame(positionCFrame * rotationCFrame)
 
-	-- Set depth multiplier (optional)
 	model3D:SetDepthMultiplier(settings.DepthMultiplier or 1.5)
+	
+	local camera = model3D.CurrentCamera
+	if camera then
+		camera.FieldOfView = settings.FieldOfView or 70
+	end
 
-	-- Update the viewport to reflect changes
 	model3D:Update()
 
-	-- Return the model3D instance for further control if needed
 	return model3D
 end
 
@@ -127,26 +123,20 @@ function module.HandlePreview()
 
 	if RenderSettings.Model[1]:IsA("Model") then
 		if RenderSettings.Scale == 0 then
-			RenderSettings.DynamicCamera = true
 			RenderSettings.Scale = RenderSettings.Model[1]:GetScale()
 		end
 
 		RenderSettings.Frame = module.Ui.Main.Preview.ModelViewport
 		
-		RenderModel(RenderSettings.Frame, RenderSettings.Model[1], {
-			Distance = RenderSettings.Distance, -- Distance from the camera
-			Scale = RenderSettings.Scale, -- Scale the model
-			RotationX = RenderSettings.RotationX, -- Rotate 45 degrees on the X-axis
-			RotationY = RenderSettings.RotationY, -- Rotate 30 degrees on the Y-axis
-			RotationZ = RenderSettings.RotationZ, -- Rotate 15 degrees on the Z-axis
-			DepthMultiplier = 1.8, -- Optional: Adjust the camera depth
+		local model3D = RenderModel(RenderSettings.Frame, RenderSettings.Model[1], {
+			Distance = RenderSettings.Distance,
+			Scale = RenderSettings.Scale,
+			RotationX = RenderSettings.RotationX, 
+			RotationY = RenderSettings.RotationY,
+			RotationZ = RenderSettings.RotationZ,
+			DepthMultiplier = 1.8,
 		})
-
-		if RenderSettings.Scale > 1 then
-			RenderSettings.DynamicCamera = false
-			RenderSettings.Frame:FindFirstChild(RenderSettings.Model[1].Name):ScaleTo(RenderSettings.Scale)
-		end
-
+		
 		PluginSettings.IsInPreviewMode = true
 	else
 		warn("Please select a model not a: ", type(RenderSettings.Model[1]))
