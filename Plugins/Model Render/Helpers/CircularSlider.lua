@@ -61,6 +61,17 @@ function CircularSlider.new(frame)
 	return self
 end
 
+function CircularSlider:SetUI()
+	local angle = math.rad(self.Value)
+	local radius = (self.Outer.AbsoluteSize.X / 2)
+	local center = self.Outer.AbsolutePosition + self.Outer.AbsoluteSize / 2
+
+	local x = center.X + radius * math.cos(angle) - self.Click.AbsoluteSize.X / 2
+	local y = center.Y + radius * math.sin(angle) - self.Click.AbsoluteSize.Y / 2
+	self.Click.Position = UDim2.new(0, x - self.Frame.AbsolutePosition.X, 0, y - self.Frame.AbsolutePosition.Y)
+	self.ValueLabel.Text = tostring(math.floor(self.Value))
+end
+
 function CircularSlider:SetValue(value)
 	self.Value = math.clamp(value, -360, 360)
 
