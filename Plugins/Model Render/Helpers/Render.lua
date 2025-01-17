@@ -93,6 +93,4 @@ function Render.RenderModelInViewport(data)
 	)
 end
 
--- require(game.ReplicatedStorage.Render).renderModelInViewport("Huge Bunny", {Distance = 0, Scale = false, RotationX = 102, RotationY = 0, RotationZ = 0})
-
 return Render
