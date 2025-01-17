@@ -32,6 +32,7 @@ local RenderSettings = {
 	RotationY = 0,
 	RotationZ = 0,
 	Scale = 0,
+	DynamicCamera = false, 
 	Model = Selection:Get()
 }
 
@@ -82,13 +83,15 @@ function module.HandlePreview()
 
 	if RenderSettings.Model[1]:IsA("Model") then
 		if RenderSettings.Scale == 0 then
+			RenderSettings.DynamicCamera = false
 			RenderSettings.Scale = RenderSettings.Model[1]:GetScale()
 		end
 
 		RenderSettings.Frame = module.Ui.Main.ModelViewport
 		Render.RenderModelInPreviewViewport(RenderSettings)
 
-		if RenderSettings.Scale >= 1 then
+		if RenderSettings.Scale > 1 then
+			RenderSettings.DynamicCamera = true
 			RenderSettings.Frame:FindFirstChild(RenderSettings.Model[1].Name):ScaleTo(RenderSettings.Scale)
 		end
 
