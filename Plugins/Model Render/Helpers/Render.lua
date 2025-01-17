@@ -51,18 +51,14 @@ function Render.RenderModelInPreviewViewport(data)
 	-- Calculate camera distance dynamically or use the provided value
 	local cameraDistance = dynamicCamera and math.max(modelSize.Magnitude * 1.5, distance) or distance
 
-	-- Apply rotation to the model
-	local rotation = CFrame.Angles(
-		math.rad(rotationX),
-		math.rad(rotationY),
-		math.rad(rotationZ)
-	)
-	modelClone:SetPrimaryPartCFrame(modelCFrame * rotation)
+	-- Apply orientation to the model
+	local primaryPart = modelClone.PrimaryPart
+	primaryPart.Orientation = Vector3.new(rotationX, rotationY, rotationZ)
 
-	-- Position the camera to focus on the model without affecting rotation
+	-- Position the camera to focus on the model
 	camera.CFrame = CFrame.new(
-		modelCFrame.Position + Vector3.new(0, modelSize.Y / 2, cameraDistance),
-		modelCFrame.Position
+		primaryPart.Position + Vector3.new(0, modelSize.Y / 2, cameraDistance),
+		primaryPart.Position
 	)
 end
 
