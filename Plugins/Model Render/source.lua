@@ -6,11 +6,8 @@ local Selection = game:GetService("Selection")
 
 --// Helpers
 local CircularSlider_C = HttpService:GetAsync("https://raw.githubusercontent.com/DesyncDeveloper/RobloxStudio/refs/heads/main/Plugins/Model%20Render/Helpers/CircularSlider.lua", true)
-task.wait(3)
 local Slider_C = HttpService:GetAsync("https://raw.githubusercontent.com/DesyncDeveloper/RobloxStudio/refs/heads/main/Plugins/Model%20Render/Helpers/Slider.lua", true)
-task.wait(3)
 local Render_C = HttpService:GetAsync("https://raw.githubusercontent.com/DesyncDeveloper/RobloxStudio/refs/heads/main/Plugins/Model%20Render/Helpers/Render.lua", true)
-task.wait(3)
 local CircularSlider_F = loadstring(CircularSlider_C)
 local Slider_F = loadstring(Slider_C)
 local Render_F = loadstring(Render_C)
