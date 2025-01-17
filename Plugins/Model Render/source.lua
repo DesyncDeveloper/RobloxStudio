@@ -152,6 +152,8 @@ function module.Start()
 				slider = CircularSlider.new(sliderInfo.frame)
 			end
 
+			print(slider)
+
 			slider.Released:Connect(function(value)
 				RenderSettings[sliderInfo.property] = value
 				if PluginSettings.IsInPreviewMode then
