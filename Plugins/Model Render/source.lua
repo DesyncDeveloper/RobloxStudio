@@ -53,6 +53,8 @@ local function updateAngleSelectionUI(selectedAngle)
 		if isSelected then
 			local AngleSlider = PluginSettings.Sliders["Angle"]
 			if AngleSlider then
+				print(AngleSlider)
+				print(RenderSettings["Rotation"..PluginSettings.CurrentAngle])
 				AngleSlider.SetUI(RenderSettings["Rotation"..PluginSettings.CurrentAngle])
 			end
 		end
