@@ -103,7 +103,7 @@ function module.Start()
 			module.Ui.Main.Preview.Visible = false
 		end)
 
-		module.HandleButton(module.Ui.Main.ValueIcon.AngleIcon.Click, function()
+		module.HandleButton(module.Ui.Main.Info.ValueIcon.AngleIcon.Click, function()
 			module.Ui.Main.Info.DistanceInfo.Visible = false
 			module.Ui.Main.Info.ScaleInfo.Visible = false
 			module.Ui.Main.Info.AngleInfo.Visible = false
