@@ -83,7 +83,7 @@ function module.HandlePreview()
 
 	if RenderSettings.Model[1]:IsA("Model") then
 		if RenderSettings.Scale == 0 then
-			RenderSettings.DynamicCamera = false
+			RenderSettings.DynamicCamera = true
 			RenderSettings.Scale = RenderSettings.Model[1]:GetScale()
 		end
 
@@ -91,7 +91,8 @@ function module.HandlePreview()
 		Render.RenderModelInPreviewViewport(RenderSettings)
 
 		if RenderSettings.Scale > 1 then
-			RenderSettings.DynamicCamera = true
+			print("Yes enable")
+			RenderSettings.DynamicCamera = false
 			RenderSettings.Frame:FindFirstChild(RenderSettings.Model[1].Name):ScaleTo(RenderSettings.Scale)
 		end
 
