@@ -1,165 +1,84 @@
---// Services
-local InsertService = game:GetService("InsertService")
-local HttpService = game:GetService("HttpService")
-local Selection = game:GetService("Selection")
+local Slider = {}
+Slider.__index = Slider
 
+local userInput = game:GetService("UserInputService")
 
---// Helpers
-local CircularSlider_C = HttpService:GetAsync("https://raw.githubusercontent.com/DesyncDeveloper/RobloxStudio/refs/heads/main/Plugins/Model%20Render/Helpers/CircularSlider.lua", true)
-local Slider_C = HttpService:GetAsync("https://raw.githubusercontent.com/DesyncDeveloper/RobloxStudio/refs/heads/main/Plugins/Model%20Render/Helpers/Slider.lua", true)
-local Render_C = HttpService:GetAsync("https://raw.githubusercontent.com/DesyncDeveloper/RobloxStudio/refs/heads/main/Plugins/Model%20Render/Helpers/Render.lua", true)
-local CircularSlider_F = loadstring(CircularSlider_C)
-local Slider_F = loadstring(Slider_C)
-local Render_F = loadstring(Render_C)
-
-local CircularSlider = CircularSlider_F()
-local Slider = Slider_F()
-local Render = Render_F()
-
---// Module
-local module = {
-	Ui = nil
-}
-
-local PluginSettings = {
-	CurrentAngle = "X",
-	IsInPreviewMode = false
-}
-
-local RenderSettings = {
-	Distance = 0,
-	RotationX = 0,
-	RotationY = 0,
-	RotationZ = 0,
-	Scale = 0,
-	Model = Selection:Get()
-}
-
-local function setVisibility(elements, visible)
-	for _, element in pairs(elements) do
-		element.Visible = visible
-	end
+local function Round(x, mult)
+	local precision = math.log10(1 / mult)
+	return math.floor(x * 10^precision + 0.5) / 10^precision
 end
 
-local function updateAngleSelectionUI(selectedAngle)
-	local angles = {"X", "Y", "Z"}
-	for _, angle in ipairs(angles) do
-		local iconVisible = angle == selectedAngle
-		module.Ui.Main.AngleSelection[angle].Icon.Visible = iconVisible
-		module.Ui.Main.AngleSelection[angle].Indication.Visible = angle == selectedAngle
-	end
-end
+function Slider.new(frame, initial, config)
+	config = config or {}
+	local self = setmetatable({
+		Frame = frame;
+		Value = initial or 0;
+	}, Slider)
 
-function module.Open()
-	if not module.Ui then
-		local screenGui = InsertService:LoadAsset(108084540237363):GetChildren()[1]
-		if screenGui:IsA("ScreenGui") then
-			screenGui.Parent = game:WaitForChild("CoreGui")
-			module.Ui = screenGui
+	self.MinValue = config.MinValue or 0
+	self.MaxValue = config.MaxValue or 100
+	self.Increment = config.Increment or 1
+
+	self._holder = frame:WaitForChild("Holder")
+	self._slider = self._holder:WaitForChild("Slider")
+	self._valueLabel = self._holder:WaitForChild("Value")
+
+	self._changed = Instance.new("BindableEvent")
+	self.Changed = self._changed.Event
+
+	self._released = Instance.new("BindableEvent")
+	self.Released = self._released.Event
+
+	local dragging = false
+
+	self._slider.MouseButton1Down:Connect(function(x, y)
+		dragging = true
+		self:Calculate(x)
+	end)
+
+	userInput.InputChanged:Connect(function(input, processed)
+		if (dragging and input.UserInputType == Enum.UserInputType.MouseMovement) then
+			self:Calculate(input.Position.X)
+		end
+	end)
+
+	userInput.InputEnded:Connect(function(input, processed)
+		if (dragging and input.UserInputType == Enum.UserInputType.MouseButton1) then
+			dragging = false
+			self._released:Fire(self.Value)
+		end
+	end)
+
+	self._valueLabel.FocusLost:Connect(function()
+		local inputValue = tonumber(self._valueLabel.Text)
+		if inputValue then
+			self:SetValue(inputValue or 0)
 		else
-			warn("The asset is not a ScreenGui")
+			self._valueLabel.Text = tostring(self.Value)
 		end
-	end
+	end)
+
+	self:SetValue(initial or 0)
+
+	return self
 end
 
-function module.Close()
-	if module.Ui then
-		module.Ui:Destroy()
-		module.Ui = nil
-	end
+function Slider:SetValue(value)
+	value = math.clamp(value, self.MinValue, self.MaxValue)
+	local roundedValue = Round((value - self.MinValue) / self.Increment, self.Increment) * self.Increment + self.MinValue
+
+	local normalizedValue = (roundedValue - self.MinValue) / (self.MaxValue - self.MinValue)
+	self._slider.Position = UDim2.new(normalizedValue, 0, 0.5, 0)
+	self.Value = roundedValue
+
+	self._valueLabel.Text = tostring(self.Value)
 end
 
-function module.HandleButton(Button, callback)
-	if module.Ui then
-		Button.MouseButton1Click:Connect(callback)
-	end
+function Slider:Calculate(mouseX)
+	local ratio = math.clamp(((mouseX - self._holder.AbsolutePosition.X) / self._holder.AbsoluteSize.X), 0, 1)
+	local value = ratio * (self.MaxValue - self.MinValue) + self.MinValue
+	self:SetValue(value)
+	self._changed:Fire(value)
 end
 
-function module.Start()
-	if module.Ui then
-		local buttonActions = {
-			{button = module.Ui.Main.Info.DistanceIcon.Click, infoElements = {module.Ui.Main.Info.DistanceInfo}},
-			{button = module.Ui.Main.Info.ScaleIcon.Click, infoElements = {module.Ui.Main.Info.ScaleInfo}},
-			{button = module.Ui.Main.Info.AngleIcon.Click, infoElements = {module.Ui.Main.Info.AngleInfo}},
-			{button = module.Ui.Main.Info.ValueIcon.Click, infoElements = {module.Ui.Main.Info.ValueInfo}},
-			{button = module.Ui.Main.Info.Close, infoElements = {
-				module.Ui.Main.Info.DistanceInfo,
-				module.Ui.Main.Info.ScaleInfo,
-				module.Ui.Main.Info.AngleInfo,
-				module.Ui.Main.Info.ValueInfo
-			}},
-		}
-
-		for _, action in ipairs(buttonActions) do
-			module.HandleButton(action.button, function()
-				setVisibility({module.Ui.Main.Info.DistanceInfo, module.Ui.Main.Info.ScaleInfo, module.Ui.Main.Info.AngleInfo, module.Ui.Main.Info.ValueInfo}, false)
-				setVisibility(action.infoElements, true)
-
-				module.Ui.Main.Info.Close.Visible = action.button ~= module.Ui.Main.Info.Close
-				setVisibility({
-					module.Ui.Main.PreviewModel, module.Ui.Main.RemoveModel, module.Ui.Main.Preview
-				}, action.button == module.Ui.Main.Info.Close)
-			end)
-		end
-
-		module.HandleButton(module.Ui.Main.AngleSelection.X, function()
-			updateAngleSelectionUI("X")
-			PluginSettings.CurrentAngle = "X"
-		end)
-		module.HandleButton(module.Ui.Main.AngleSelection.Y, function()
-			updateAngleSelectionUI("Y")
-			PluginSettings.CurrentAngle = "Y"
-		end)
-		module.HandleButton(module.Ui.Main.AngleSelection.Z, function()
-			updateAngleSelectionUI("Z")
-			PluginSettings.CurrentAngle = "Z"
-		end)
-
-		module.HandleButton(module.Ui.Main.PreviewModel.Click, function() end)
-		module.HandleButton(module.Ui.Main.RemoveModel.Click, function()
-			PluginSettings.IsInPreviewMode = false
-			for _, child in pairs(module.Ui.Main.Preview.ModelViewport:GetChildren()) do
-				if not child:IsA("UIAspectRatioConstraint") then
-					child:Destroy()
-				end
-			end
-		end)
-
-		Selection.SelectionChanged:Connect(function()
-			if not PluginSettings.IsInPreviewMode then
-				RenderSettings.Model = Selection:Get()
-			end
-		end)
-
-		local sliders = {
-			{frame = module.Ui.Main.Distance, SliderType ="Line", min = 0, max = 100, inc = 1},
-			{frame = module.Ui.Main.Scale, SliderType = "Line", min = 0, max = 100, inc = 0.5},
-			{frame = module.Ui.Main.Angle, sliderType = "Circle"}
-		}
-
-		for _, sliderInfo in pairs(sliders) do
-			local slider
-			print(sliderInfo.SliderType)
-			if sliderInfo.SliderType == "Line" then
-				slider = Slider.new(sliderInfo.frame, 0, {
-					MinValue = sliderInfo.min,
-					MaxValue = sliderInfo.max,
-					Increment = sliderInfo.inc,
-				})
-			elseif sliderInfo.SliderType == "Circle" then
-				print("Circle")
-				slider = CircularSlider.new(sliderInfo.frame)
-				print(slider)
-			end
-
-			slider.Released:Connect(function(value)
-				RenderSettings[sliderInfo.property] = value
-				if PluginSettings.IsInPreviewMode then
-					-- UpdatePreview()
-				end
-			end)
-		end
-	end
-end
-
-return module
+return Slider
