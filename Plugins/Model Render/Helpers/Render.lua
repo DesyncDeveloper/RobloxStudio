@@ -19,36 +19,47 @@ function Render.RenderModelInPreviewViewport(data)
 	end
 
 	local modelClone = model:Clone()
-	local distance, scale, rotationX, rotationY, rotationZ = data.Distance or 0, data.Scale or false, data.RotationX or 0, data.RotationY or 0, data.RotationZ or 0
+	local distance = data.Distance or 0
+	local scale = data.Scale
+	local rotationX = data.RotationX or 0
+	local rotationY = data.RotationY or 0
+	local rotationZ = data.RotationZ or 0
 
-	for i,v in pairs(data.Frame:GetChildren()) do
+	-- Clear existing children in the frame (except UI constraints)
+	for _, v in ipairs(data.Frame:GetChildren()) do
 		if not v:IsA("UIAspectRatioConstraint") then
 			v:Destroy()
 		end
 	end
 
+	-- Set up the camera
 	local camera = Instance.new("Camera")
 	camera.Parent = data.Frame
 	data.Frame.CurrentCamera = camera
 
 	modelClone.Parent = data.Frame
 
-	if scale ~= nil then
+	-- Apply scaling to the model only if scale is specified
+	if scale then
 		modelClone:ScaleTo(scale)
 	end
 
 	local modelCFrame = modelClone:GetModelCFrame()
 	local modelSize = modelClone:GetExtentsSize()
 	local dynamicCamera = data.DynamicCamera or false
+
+	-- Calculate camera distance dynamically or use the provided value
 	local cameraDistance = dynamicCamera and math.max(modelSize.Magnitude * 1.5, distance) or distance
-	
+
+	-- Apply rotation to the model
 	local rotation = CFrame.Angles(
-		math.rad(rotationX or 0),
-		math.rad(rotationY or 0),
-		math.rad(rotationZ or 0)
+		math.rad(rotationX),
+		math.rad(rotationY),
+		math.rad(rotationZ)
 	)
 	modelClone:SetPrimaryPartCFrame(modelCFrame * rotation)
 
+	-- Position the camera to focus on the model without affecting rotation
 	camera.CFrame = CFrame.new(
 		modelCFrame.Position + Vector3.new(0, modelSize.Y / 2, cameraDistance),
 		modelCFrame.Position
@@ -93,7 +104,5 @@ function Render.RenderModelInViewport(data)
 		modelCFrame.Position
 	)
 end
-
--- require(game.ReplicatedStorage.Render).renderModelInViewport("Huge Bunny", {Distance = 0, Scale = false, RotationX = 102, RotationY = 0, RotationZ = 0})
 
 return Render
