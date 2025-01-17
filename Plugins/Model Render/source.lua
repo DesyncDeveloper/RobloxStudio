@@ -111,22 +111,25 @@ function module.Start()
 			{button = module.Ui.Main.Info.ScaleIcon.Click, infoElements = {module.Ui.Main.Info.ScaleInfo}},
 			{button = module.Ui.Main.Info.AngleIcon.Click, infoElements = {module.Ui.Main.Info.AngleInfo}},
 			{button = module.Ui.Main.Info.ValueIcon.Click, infoElements = {module.Ui.Main.Info.ValueInfo}},
-			{button = module.Ui.Main.Info.Close, infoElements = {
-				module.Ui.Main.Info.DistanceInfo,
-				module.Ui.Main.Info.ScaleInfo,
-				module.Ui.Main.Info.AngleInfo,
-				module.Ui.Main.Info.ValueInfo
-			}},
+			{button = module.Ui.Main.Info.Close, infoElements = {}},
 		}
-
+		
 		for _, action in ipairs(buttonActions) do
 			module.HandleButton(action.button, function()
-				setVisibility({module.Ui.Main.Info.DistanceInfo, module.Ui.Main.Info.ScaleInfo, module.Ui.Main.Info.AngleInfo, module.Ui.Main.Info.ValueInfo}, false)
+				setVisibility({
+					module.Ui.Main.Info.DistanceInfo,
+					module.Ui.Main.Info.ScaleInfo,
+					module.Ui.Main.Info.AngleInfo,
+					module.Ui.Main.Info.ValueInfo
+				}, false)
+
 				setVisibility(action.infoElements, true)
 
 				module.Ui.Main.Info.Close.Visible = action.button ~= module.Ui.Main.Info.Close
 				setVisibility({
-					module.Ui.Main.PreviewModel, module.Ui.Main.RemoveModel, module.Ui.Main.Preview
+					module.Ui.Main.PreviewModel, 
+					module.Ui.Main.RemoveModel, 
+					module.Ui.Main.Preview
 				}, action.button == module.Ui.Main.Info.Close)
 			end)
 		end
