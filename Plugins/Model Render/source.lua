@@ -23,14 +23,12 @@ local RenderSettings = {
 
 function module.Open()
 	if module.Ui == nil then
-		local function insertScreenGui()
-			local screenGui = InsertService:LoadAsset(108084540237363):GetChildren()[1]
-			if screenGui:IsA("ScreenGui") then
-				screenGui.Ui.Parent = game:WaitForChild("CoreGui")
-				module.Ui = screenGui
-			else
-				warn("The asset is not a ScreenGui")
-			end
+		local screenGui = InsertService:LoadAsset(108084540237363):GetChildren()[1]
+		if screenGui:IsA("ScreenGui") then
+			screenGui.Ui.Parent = game:WaitForChild("CoreGui")
+			module.Ui = screenGui
+		else
+			warn("The asset is not a ScreenGui")
 		end
 	end
 end
