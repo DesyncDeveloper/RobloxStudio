@@ -1,15 +1,30 @@
 --// Services
 local InsertService = game:GetService("InsertService")
+local HttpService = game:GetService("HttpService")
 local Selection = game:GetService("Selection")
 
---//
+
+--// Helpers
+local CircularSlider_C = HttpService:GetAsync("https://raw.githubusercontent.com/DesyncDeveloper/RobloxStudio/refs/heads/main/Plugins/Model%20Render/Helpers/CircularSlider.lua", true)
+local Slider_C = HttpService:GetAsync("https://raw.githubusercontent.com/DesyncDeveloper/RobloxStudio/refs/heads/main/Plugins/Model%20Render/Helpers/Slider.lua", true)
+local Render_C = HttpService:GetAsync("https://raw.githubusercontent.com/DesyncDeveloper/RobloxStudio/refs/heads/main/Plugins/Model%20Render/Helpers/Render.lua", true)
+local CircularSlider_F = CircularSlider_C()
+local Slider_F = Slider_C()
+local Render_F = Render_C()
+
+local CircularSlider = CircularSlider_F
+local Slider = Slider_F
+local Render = Render_F
+
+
+--// Module
 local module = {
 	Ui = nil
 }
 
 local PluginSettings = {
 	CurrentAngle = "X",
-	IsInPreviewMode = false	
+	IsInPreviewMode = false
 }
 
 local RenderSettings = {
@@ -21,11 +36,25 @@ local RenderSettings = {
 	Model = Selection:Get()
 }
 
+local function setVisibility(elements, visible)
+	for _, element in pairs(elements) do
+		element.Visible = visible
+	end
+end
+
+local function updateAngleSelectionUI(selectedAngle)
+	local angles = {"X", "Y", "Z"}
+	for _, angle in ipairs(angles) do
+		local iconVisible = angle == selectedAngle
+		module.Ui.Main.AngleSelection[angle].Icon.Visible = iconVisible
+		module.Ui.Main.AngleSelection[angle].Indication.Visible = angle == selectedAngle
+	end
+end
+
 function module.Open()
-	if module.Ui == nil then
+	if not module.Ui then
 		local screenGui = InsertService:LoadAsset(108084540237363):GetChildren()[1]
 		if screenGui:IsA("ScreenGui") then
-			print(screenGui)
 			screenGui.Parent = game:WaitForChild("CoreGui")
 			module.Ui = screenGui
 		else
@@ -35,135 +64,99 @@ function module.Open()
 end
 
 function module.Close()
-	if module.Ui ~= nil then
+	if module.Ui then
 		module.Ui:Destroy()
 		module.Ui = nil
 	end
 end
 
 function module.HandleButton(Button, callback)
-	if module.Ui ~= nil then
-		Button.MouseButton1Click:Connect(function()
-			callback()
-		end)
+	if module.Ui then
+		Button.MouseButton1Click:Connect(callback)
 	end
 end
 
 function module.Start()
-	if module.Ui ~= nil then
-		module.HandleButton(module.Ui.Main.Info.DistanceIcon.Click, function()
-			module.Ui.Main.Info.DistanceInfo.Visible = true
-			module.Ui.Main.Info.ScaleInfo.Visible = false
-			module.Ui.Main.Info.AngleInfo.Visible = false
-			module.Ui.Main.Info.ValueInfo.Visible = false
+	if module.Ui then
+		local buttonActions = {
+			{button = module.Ui.Main.Info.DistanceIcon.Click, infoElements = {module.Ui.Main.Info.DistanceInfo}},
+			{button = module.Ui.Main.Info.ScaleIcon.Click, infoElements = {module.Ui.Main.Info.ScaleInfo}},
+			{button = module.Ui.Main.Info.AngleIcon.Click, infoElements = {module.Ui.Main.Info.AngleInfo}},
+			{button = module.Ui.Main.Info.ValueIcon.Click, infoElements = {module.Ui.Main.Info.ValueInfo}},
+			{button = module.Ui.Main.Info.Close, infoElements = {
+				module.Ui.Main.Info.DistanceInfo,
+				module.Ui.Main.Info.ScaleInfo,
+				module.Ui.Main.Info.AngleInfo,
+				module.Ui.Main.Info.ValueInfo
+			}},
+		}
 
-			module.Ui.Main.Info.Close.Visible = true
+		for _, action in ipairs(buttonActions) do
+			module.HandleButton(action.button, function()
+				setVisibility({module.Ui.Main.Info.DistanceInfo, module.Ui.Main.Info.ScaleInfo, module.Ui.Main.Info.AngleInfo, module.Ui.Main.Info.ValueInfo}, false)
+				setVisibility(action.infoElements, true)
 
-			module.Ui.Main.PreviewModel.Visible = false
-			module.Ui.Main.RemoveModel.Visible = false
-			module.Ui.Main.Preview.Visible = false
-		end)
-		
-		module.HandleButton(module.Ui.Main.Info.DistanceIcon.Click, function()
-			module.Ui.Main.Info.DistanceInfo.Visible = true
-			module.Ui.Main.Info.ScaleInfo.Visible = false
-			module.Ui.Main.Info.AngleInfo.Visible = false
-			module.Ui.Main.Info.ValueInfo.Visible = false
+				module.Ui.Main.Info.Close.Visible = action.button ~= module.Ui.Main.Info.Close
+				setVisibility({
+					module.Ui.Main.PreviewModel, module.Ui.Main.RemoveModel, module.Ui.Main.Preview
+				}, action.button == module.Ui.Main.Info.Close)
+			end)
+		end
 
-			module.Ui.Main.Info.Close.Visible = true
-
-			module.Ui.Main.PreviewModel.Visible = false
-			module.Ui.Main.RemoveModel.Visible = false
-			module.Ui.Main.Preview.Visible = false
-		end)
-		
-		module.HandleButton(module.Ui.Main.Info.ScaleIcon.Click, function()
-			module.Ui.Main.Info.DistanceInfo.Visible = false
-			module.Ui.Main.Info.ScaleInfo.Visible = true
-			module.Ui.Main.Info.AngleInfo.Visible = false
-			module.Ui.Main.Info.ValueInfo.Visible = false
-
-			module.Ui.Main.Info.Close.Visible = true
-
-			module.Ui.Main.PreviewModel.Visible = false
-			module.Ui.Main.RemoveModel.Visible = false
-			module.Ui.Main.Preview.Visible = false
-		end)
-
-		module.HandleButton(module.Ui.Main.Info.AngleIcon.Click, function()
-			module.Ui.Main.Info.DistanceInfo.Visible = false
-			module.Ui.Main.Info.ScaleInfo.Visible = false
-			module.Ui.Main.Info.AngleInfo.Visible = true
-			module.Ui.Main.Info.ValueInfo.Visible = false
-
-			module.Ui.Main.Info.Close.Visible = true
-
-			module.Ui.Main.PreviewModel.Visible = false
-			module.Ui.Main.RemoveModel.Visible = false
-			module.Ui.Main.Preview.Visible = false
-		end)
-
-		module.HandleButton(module.Ui.Main.Info.ValueIcon.Click, function()
-			module.Ui.Main.Info.DistanceInfo.Visible = false
-			module.Ui.Main.Info.ScaleInfo.Visible = false
-			module.Ui.Main.Info.AngleInfo.Visible = false
-			module.Ui.Main.Info.ValueInfo.Visible = true
-
-			module.Ui.Main.Info.Close.Visible = true
-
-			module.Ui.Main.PreviewModel.Visible = false
-			module.Ui.Main.RemoveModel.Visible = false
-			module.Ui.Main.Preview.Visible = false
-		end)
-
-		module.HandleButton(module.Ui.Main.Info.Close, function()
-			module.Ui.Main.Info.DistanceInfo.Visible = false
-			module.Ui.Main.Info.ScaleInfo.Visible = false
-			module.Ui.Main.Info.AngleInfo.Visible = false
-			module.Ui.Main.Info.ValueInfo.Visible = false
-
-			module.Ui.Main.Info.Close.Visible = false
-
-			module.Ui.Main.PreviewModel.Visible = true
-			module.Ui.Main.RemoveModel.Visible = true
-			module.Ui.Main.Preview.Visible = true
-		end)
-
-		module.HandleButton(module.Ui.AngleSelection.X, function()
-			module.Ui.Main.AngleSelection.X.Icon.Visible = true
-			module.Ui.Main.AngleSelection.Y.Icon.Visible = false
-			module.Ui.Main.AngleSelection.Z.Icon.Visible = false
-
-			module.Ui.Main.AngleSelection.X.Indication.Visible = false
-			module.Ui.Main.AngleSelection.Y.Indication.Visible = true
-			module.Ui.Main.AngleSelection.Z.Indication.Visible = true
-
+		module.HandleButton(module.Ui.Main.AngleSelection.X, function()
+			updateAngleSelectionUI("X")
 			PluginSettings.CurrentAngle = "X"
 		end)
-
-		module.HandleButton(module.Ui.AngleSelection.Y, function()
-			module.Ui.Main.AngleSelection.Y.Icon.Visible = true
-			module.Ui.Main.AngleSelection.Z.Icon.Visible = false
-			module.Ui.Main.AngleSelection.X.Icon.Visible = false
-
-			module.Ui.Main.AngleSelection.X.Indication.Visible = true
-			module.Ui.Main.AngleSelection.Y.Indication.Visible = false
-			module.Ui.Main.AngleSelection.Z.Indication.Visible = true
-
+		module.HandleButton(module.Ui.Main.AngleSelection.Y, function()
+			updateAngleSelectionUI("Y")
 			PluginSettings.CurrentAngle = "Y"
 		end)
-
-		module.HandleButton(module.Ui.AngleSelection.Z, function()
-			module.Ui.Main.AngleSelection.Z.Icon.Visible = true
-			module.Ui.Main.AngleSelection.Y.Icon.Visible = false
-			module.Ui.Main.AngleSelection.X.Icon.Visible = false
-
-			module.Ui.Main.AngleSelection.X.Indication.Visible = true
-			module.Ui.Main.AngleSelection.Y.Indication.Visible = true
-			module.Ui.Main.AngleSelection.Z.Indication.Visible = false
-
+		module.HandleButton(module.Ui.Main.AngleSelection.Z, function()
+			updateAngleSelectionUI("Z")
 			PluginSettings.CurrentAngle = "Z"
 		end)
+
+		module.HandleButton(module.Ui.Main.PreviewModel.Click, function() end)
+		module.HandleButton(module.Ui.Main.RemoveModel.Click, function()
+			PluginSettings.IsInPreviewMode = false
+			for _, child in pairs(module.Ui.Main.Preview.ModelViewport:GetChildren()) do
+				if not child:IsA("UIAspectRatioConstraint") then
+					child:Destroy()
+				end
+			end
+		end)
+
+		Selection.SelectionChanged:Connect(function()
+			if not PluginSettings.IsInPreviewMode then
+				RenderSettings.Model = Selection:Get()
+			end
+		end)
+
+		local sliders = {
+			{frame = module.Ui.Main.Distance, SliderType ="Line", min = 0, max = 100, inc = 1},
+			{frame = module.Ui.Main.Scale, SliderType = "Line", min = 0, max = 100, inc = 0.5},
+			{frame = module.Ui.Main.Angle, sliderType = "Circle"}
+		}
+
+		for _, sliderInfo in ipairs(sliders) do
+			local slider
+			if sliderInfo.SliderType == "Line" then
+				slider = Slider.new(sliderInfo.frame, 0, {
+					MinValue = sliderInfo.min,
+					MaxValue = sliderInfo.max,
+					Increment = sliderInfo.inc,
+				})
+			elseif sliderInfo.SliderType == "Circle" then
+				slider = CircularSlider.new(sliderInfo.frame)
+			end
+
+			slider.Released:Connect(function(value)
+				RenderSettings[sliderInfo.property] = value
+				if PluginSettings.IsInPreviewMode then
+					-- UpdatePreview()
+				end
+			end)
+		end
 	end
 end
 
