@@ -6,8 +6,11 @@ local Selection = game:GetService("Selection")
 
 --// Helpers
 local CircularSlider_C = HttpService:GetAsync("https://raw.githubusercontent.com/DesyncDeveloper/RobloxStudio/refs/heads/main/Plugins/Model%20Render/Helpers/CircularSlider.lua", true)
+task.wait(3)
 local Slider_C = HttpService:GetAsync("https://raw.githubusercontent.com/DesyncDeveloper/RobloxStudio/refs/heads/main/Plugins/Model%20Render/Helpers/Slider.lua", true)
+task.wait(3)
 local Render_C = HttpService:GetAsync("https://raw.githubusercontent.com/DesyncDeveloper/RobloxStudio/refs/heads/main/Plugins/Model%20Render/Helpers/Render.lua", true)
+task.wait(3)
 local CircularSlider_F = loadstring(CircularSlider_C)
 local Slider_F = loadstring(Slider_C)
 local Render_F = loadstring(Render_C)
@@ -15,9 +18,6 @@ local Render_F = loadstring(Render_C)
 local CircularSlider = CircularSlider_F()
 local Slider = Slider_F()
 local Render = Render_F()
-
-print(Slider)
-
 
 --// Module
 local module = {
@@ -140,8 +140,9 @@ function module.Start()
 			{frame = module.Ui.Main.Angle, sliderType = "Circle"}
 		}
 
-		for _, sliderInfo in ipairs(sliders) do
+		for _, sliderInfo in pairs(sliders) do
 			local slider
+			print(sliderInfo.SliderType)
 			if sliderInfo.SliderType == "Line" then
 				slider = Slider.new(sliderInfo.frame, 0, {
 					MinValue = sliderInfo.min,
@@ -149,10 +150,10 @@ function module.Start()
 					Increment = sliderInfo.inc,
 				})
 			elseif sliderInfo.SliderType == "Circle" then
+				print("Circle")
 				slider = CircularSlider.new(sliderInfo.frame)
+				print(slider)
 			end
-
-			print(slider)
 
 			slider.Released:Connect(function(value)
 				RenderSettings[sliderInfo.property] = value
