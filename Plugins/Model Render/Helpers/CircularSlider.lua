@@ -41,7 +41,7 @@ function CircularSlider.new(frame)
 	game:GetService("UserInputService").InputChanged:Connect(function(input)
 		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
 			local angle = calculateAngle(center, input.Position)
-			if angle > 180 then
+			if angle > 180 then                
 				angle = angle - 360
 			end
 			self:SetValue(angle)
@@ -56,6 +56,10 @@ function CircularSlider.new(frame)
 			self.ValueLabel.Text = tostring(self.Value)
 		end
 	end)
+
+	function self.Test()
+		print("ye")
+	end
 
 	self:SetValue(0)
 	return self
