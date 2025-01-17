@@ -52,7 +52,7 @@ local function updateAngleSelectionUI(selectedAngle)
 		
 		if isSelected then
 			print(PluginSettings.Sliders)
-			print(PluginSettings.Sliders["angle"])
+			print(PluginSettings.Sliders["Angle"])
 			if PluginSettings.Sliders["Rotation"..angle] ~= nil then
 				local Slider = PluginSettings.Sliders["Rotation"..angle]
 				Slider.SetUI()
