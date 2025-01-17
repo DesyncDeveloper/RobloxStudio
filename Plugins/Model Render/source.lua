@@ -46,10 +46,7 @@ end
 local function updateAngleSelectionUI(selectedAngle)
 	local angles = {"X", "Y", "Z"}
 	for _, angle in ipairs(angles) do
-		local isSelected = angle == selectedAngle
-		
-		print(module.Ui.Main:FindFirstChild("Angle"..angle))
-				
+		local isSelected = angle == selectedAngle				
 		module.Ui.Main:FindFirstChild("Angle"..angle).Visible = isSelected
 		module.Ui.Main.AngleSelection[angle].Icon.Visible = isSelected
 		module.Ui.Main.AngleSelection[angle].Indication.Visible = not isSelected
