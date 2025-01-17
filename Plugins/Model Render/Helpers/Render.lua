@@ -38,7 +38,7 @@ function Render.RenderModelInPreviewViewport(data)
 	end
 
 	local modelCFrame = modelClone:GetModelCFrame()
-	local modelSize = modelClone:GetScale()
+	local modelSize = modelClone:GetExtentsSize()
 	local cameraDistance = math.max(modelSize.Magnitude * 1.5, distance)
 
 	local rotation = CFrame.Angles(
