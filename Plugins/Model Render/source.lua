@@ -47,17 +47,9 @@ local function updateAngleSelectionUI(selectedAngle)
 	local angles = {"X", "Y", "Z"}
 	for _, angle in ipairs(angles) do
 		local isSelected = angle == selectedAngle
+		module.Ui.Main.Angle[angle].Visible = isSelected
 		module.Ui.Main.AngleSelection[angle].Icon.Visible = isSelected
 		module.Ui.Main.AngleSelection[angle].Indication.Visible = not isSelected
-		
-		if isSelected then
-			local AngleSlider = PluginSettings.Sliders["Angle"]
-			if AngleSlider then
-				print(AngleSlider)
-				print(RenderSettings["Rotation"..selectedAngle])
-				AngleSlider.SetUI(RenderSettings["Rotation"..selectedAngle])
-			end
-		end
 	end
 end
 
@@ -171,7 +163,9 @@ function module.Start()
 		local sliders = {
 			{frame = module.Ui.Main.Distance, SliderType ="Line", name = "Distance", property = "Distance", min = 0, max = 100, inc = 1},
 			{frame = module.Ui.Main.Scale, SliderType = "Line", name = "Scale", property = "Scale", min = 0, max = 100, inc = 0.5},
-			{frame = module.Ui.Main.Angle, SliderType = "Circle", name = "Angle", property = "Rotation"..PluginSettings.CurrentAngle}
+			{frame = module.Ui.Main.AngleX, SliderType = "Circle", name = "AngleX", property = "RotationX"},
+			{frame = module.Ui.Main.AngleY, SliderType = "Circle", name = "AngleY", property = "RotationY"},
+			{frame = module.Ui.Main.AngleZ, SliderType = "Circle", name = "AngleZ", property = "RotationZ"}
 		}
 
 		for _, sliderInfo in pairs(sliders) do
