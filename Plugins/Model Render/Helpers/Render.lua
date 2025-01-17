@@ -41,8 +41,7 @@ function Render.RenderModelInPreviewViewport(data)
 	local modelSize = modelClone:GetExtentsSize()
 	local dynamicCamera = data.DynamicCamera or false
 	local cameraDistance = dynamicCamera and math.max(modelSize.Magnitude * 1.5, distance) or distance
-
-
+	
 	local rotation = CFrame.Angles(
 		math.rad(rotationX or 0),
 		math.rad(rotationY or 0),
@@ -94,7 +93,5 @@ function Render.RenderModelInViewport(data)
 		modelCFrame.Position
 	)
 end
-
--- require(game.ReplicatedStorage.Render).renderModelInViewport("Huge Bunny", {Distance = 0, Scale = false, RotationX = 102, RotationY = 0, RotationZ = 0})
 
 return Render
