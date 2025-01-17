@@ -16,9 +16,6 @@ local CircularSlider = CircularSlider_F()
 local Slider = Slider_F()
 local Render = Render_F()
 
-print(Slider)
-
-
 --// Module
 local module = {
 	Ui = nil
@@ -140,7 +137,7 @@ function module.Start()
 			{frame = module.Ui.Main.Angle, sliderType = "Circle"}
 		}
 
-		for _, sliderInfo in ipairs(sliders) do
+		for _, sliderInfo in pairs(sliders) do
 			local slider
 			print(sliderInfo.SliderType)
 			if sliderInfo.SliderType == "Line" then
